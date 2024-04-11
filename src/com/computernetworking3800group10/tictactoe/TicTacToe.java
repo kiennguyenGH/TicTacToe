@@ -1,4 +1,5 @@
 package com.computernetworking3800group10.tictactoe;
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -130,10 +131,45 @@ public class TicTacToe implements Runnable{
 		if (accepted) {
 			for (int i =0; i < spaces.length; i++)
 			{
-				if (spaces[i] == "X") {
+				if (spaces[i] == "X")
+				{
 					g.drawImage(blueX, (i % 3) * lengthOfSpace + 4 * (i%3), (int) (i/3) * lengthOfSpace + 4 * (int) (i/3), null);
 				}
+				else if (spaces[i] == "O")
+				{
+					g.drawImage(redCircle, (i % 3) * lengthOfSpace + 4 * (i%3), (int) (i/3) * lengthOfSpace + 4 * (int) (i/3), null);
+				}
 			}
+		}
+		
+		if (won || enemyWon)
+		{
+			Graphics2D g2 = (Graphics2D) g;
+			g2.setStroke(new BasicStroke(4));
+			g.setColor(Color.BLACK);
+			g.drawLine(firstSpot % 3 * lengthOfSpace + 4 * firstSpot % 3 + lengthOfSpace / 2, (int)(firstSpot/3) * lengthOfSpace + 4 * (int) (firstSpot/3) + lengthOfSpace/2,
+					secondSpot % 3 * lengthOfSpace + 4 * secondSpot % 3 + lengthOfSpace / 2, (int) (secondSpot/3) * lengthOfSpace + 4 * (int) (secondSpot/3) + lengthOfSpace/2);
+			g.setColor(Color.RED);
+			g.setFont(largerFont);
+			if (won)
+			{
+				int stringWidth = g2.getFontMetrics().stringWidth(wonString);
+				g.drawString(wonString, WIDTH/2 - stringWidth/2, HEIGHT/2);
+				
+			}
+			else if (enemyWon)
+			{
+				int stringWidth = g2.getFontMetrics().stringWidth(enemyWonString);
+				g.drawString(enemyWonString, WIDTH/2 - stringWidth/2, HEIGHT/2);
+			}
+		}
+		else {
+			g.setColor(Color.RED);
+			g.setFont(font);
+			Graphics2D g2 = (Graphics2D) g;
+			g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+			int stringWidth = g2.getFontMetrics().stringWidth(waitingString);
+			g.drawString(waitingString, WIDTH/2 - stringWidth/2, HEIGHT/2);
 		}
 	}
 
