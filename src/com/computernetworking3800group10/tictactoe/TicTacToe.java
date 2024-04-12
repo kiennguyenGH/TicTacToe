@@ -6,6 +6,7 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
+import java.awt.Toolkit;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
@@ -49,6 +50,7 @@ public class TicTacToe implements Runnable{
 	private boolean unableToCommunicateWithOpponent = false;
 	private boolean won = false;
 	private boolean enemyWon = false;
+	private boolean tie = false;
 	
 	private int lengthOfSpace = 328;
 	private int errors = 0;
@@ -64,7 +66,13 @@ public class TicTacToe implements Runnable{
 	private String unableToCommunicateWithOpponentString = "Unable to communicate with opponent.";
 	private String wonString = "You win!";
 	private String enemyWonString = "You lose!";
+	private String tieString = "Tie!";
 	
+	private int[][] wins = new int[][] {
+		{0,1,2},{3,4,5},{6,7,8},
+		{0,3,6},{1,4,7},{2,5,8},
+		{0,4,8},{2,4,6}
+	};
 	
 	public TicTacToe()
 	{
@@ -127,7 +135,6 @@ public class TicTacToe implements Runnable{
 			g.drawString(unableToCommunicateWithOpponentString, WIDTH/2 - stringWidth/2, HEIGHT/2);
 			return;
 		}
-		
 		if (accepted) {
 			for (int i =0; i < spaces.length; i++)
 			{
@@ -140,27 +147,34 @@ public class TicTacToe implements Runnable{
 					g.drawImage(redCircle, (i % 3) * lengthOfSpace + 4 * (i%3), (int) (i/3) * lengthOfSpace + 4 * (int) (i/3), null);
 				}
 			}
-		}
-		
-		if (won || enemyWon)
-		{
-			Graphics2D g2 = (Graphics2D) g;
-			g2.setStroke(new BasicStroke(4));
-			g.setColor(Color.BLACK);
-			g.drawLine(firstSpot % 3 * lengthOfSpace + 4 * firstSpot % 3 + lengthOfSpace / 2, (int)(firstSpot/3) * lengthOfSpace + 4 * (int) (firstSpot/3) + lengthOfSpace/2,
-					secondSpot % 3 * lengthOfSpace + 4 * secondSpot % 3 + lengthOfSpace / 2, (int) (secondSpot/3) * lengthOfSpace + 4 * (int) (secondSpot/3) + lengthOfSpace/2);
-			g.setColor(Color.RED);
-			g.setFont(largerFont);
-			if (won)
+			if (won || enemyWon)
 			{
-				int stringWidth = g2.getFontMetrics().stringWidth(wonString);
-				g.drawString(wonString, WIDTH/2 - stringWidth/2, HEIGHT/2);
-				
+				Graphics2D g2 = (Graphics2D) g;
+				g2.setStroke(new BasicStroke(4));
+				g.setColor(Color.BLACK);
+				g.drawLine(firstSpot % 3 * lengthOfSpace + 4 * firstSpot % 3 + lengthOfSpace / 2, (int)(firstSpot/3) * lengthOfSpace + 4 * (int) (firstSpot/3) + lengthOfSpace/2,
+						secondSpot % 3 * lengthOfSpace + 4 * secondSpot % 3 + lengthOfSpace / 2, (int) (secondSpot/3) * lengthOfSpace + 4 * (int) (secondSpot/3) + lengthOfSpace/2);
+				g.setColor(Color.RED);
+				g.setFont(largerFont);
+				if (won)
+				{
+					int stringWidth = g2.getFontMetrics().stringWidth(wonString);
+					g.drawString(wonString, WIDTH/2 - stringWidth/2, HEIGHT/2);
+					
+				}
+				else if (enemyWon)
+				{
+					int stringWidth = g2.getFontMetrics().stringWidth(enemyWonString);
+					g.drawString(enemyWonString, WIDTH/2 - stringWidth/2, HEIGHT/2);
+				}
 			}
-			else if (enemyWon)
+			if (tie)
 			{
-				int stringWidth = g2.getFontMetrics().stringWidth(enemyWonString);
-				g.drawString(enemyWonString, WIDTH/2 - stringWidth/2, HEIGHT/2);
+				Graphics2D g2 = (Graphics2D) g;
+				g.setColor(Color.BLACK);
+				g.setFont(largerFont);
+				int stringWidth = g2.getFontMetrics().stringWidth(tieString);
+				g.drawString(tieString, WIDTH/2 - stringWidth/2, HEIGHT/2);
 			}
 		}
 		else {
@@ -192,6 +206,7 @@ public class TicTacToe implements Runnable{
 					spaces[space] = "O";
 				}
 				checkForEnemyWin();
+				checkForTie();
 				turn = true;
 			} catch (IOException e)
 			{
@@ -203,15 +218,65 @@ public class TicTacToe implements Runnable{
 	
 	
 	private void checkForWin() {
-		
+		for (int i =0; i < wins.length; i++)
+		{
+			if (circle)
+			{
+				if (spaces[wins[i][0]] == "O" && spaces[wins[i][1]] == "O" && spaces[wins[i][2]] == "O")
+				{
+					firstSpot = wins[i][0];
+					secondSpot = wins[i][2];
+					won = true;
+				}
+			}
+			else
+			{
+				if (spaces[wins[i][0]] == "X" && spaces[wins[i][1]] == "X" && spaces[wins[i][2]] == "X")
+				{
+					firstSpot = wins[i][0];
+					secondSpot = wins[i][2];
+					won = true;
+				}
+			}
+		}
 	}
 	
 	private void checkForEnemyWin() {
-		
+		for (int i =0; i < wins.length; i++)
+		{
+			if (!circle)
+			{
+				if (spaces[wins[i][0]] == "O" && spaces[wins[i][1]] == "O" && spaces[wins[i][2]] == "O")
+				{
+					firstSpot = wins[i][0];
+					secondSpot = wins[i][2];
+					enemyWon = true;
+				}
+			}
+			else
+			{
+				if (spaces[wins[i][0]] == "X" && spaces[wins[i][1]] == "X" && spaces[wins[i][2]] == "X")
+				{
+					firstSpot = wins[i][0];
+					secondSpot = wins[i][2];
+					enemyWon = true;
+				}
+			}
+		}
 	}
 	
 	private void checkForTie() {
-		
+		if (!(enemyWon || won))
+		{
+			for (int i = 0; i < spaces.length; i++)
+			{
+				if (spaces[i] == null)
+				{
+					
+				}
+				
+			}
+		}
 	}
 	
 	private void listenForServerRequest()
@@ -271,7 +336,7 @@ public class TicTacToe implements Runnable{
 
 	public static void main(String[] args)
 	{
-		System.out.println("Hello world!");
+		TicTacToe game = new TicTacToe();
 	}
 	
 	private class Painter extends JPanel implements MouseListener{
@@ -284,13 +349,51 @@ public class TicTacToe implements Runnable{
 			addMouseListener(this);
 		}
 		
-		public void painterComponent(Graphics g) {
-			
+		@Override
+		public void paintComponent(Graphics g) {
+			super.paintComponent(g);
+			render(g);
 		}
 		
 		@Override
 		public void mouseClicked(MouseEvent e) {
-			// TODO Auto-generated method stub
+			if (accepted) 
+			{
+				if (turn && !unableToCommunicateWithOpponent && !won && !enemyWon)
+				{
+					int x = e.getX() / lengthOfSpace;
+					int y = e.getY() / lengthOfSpace;
+					y *= 3;
+					int position = x+y;
+					if (spaces[position] == null)
+					{
+						if (!circle)
+						{
+							spaces[position] = "X";
+						}
+						else
+						{
+							spaces[position] = "O";
+						}
+						turn = false;
+						repaint();
+						Toolkit.getDefaultToolkit().sync();
+						try {
+							dos.writeInt(position);
+							dos.flush();
+						} catch (IOException error) {
+							errors++;
+							error.printStackTrace();
+						}
+								
+						System.out.println("SENT DATA");
+						checkForWin();
+						checkForTie();
+					}
+					
+					
+				}
+			}
 			
 		}
 
