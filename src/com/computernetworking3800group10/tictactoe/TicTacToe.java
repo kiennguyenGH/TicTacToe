@@ -324,9 +324,9 @@ public class TicTacToe implements Runnable{
 	
 	private void loadImages() {
 		try {
-			board = ImageIO.read(getClass().getResourceAsStream("/Board.png"));
-			blueX = ImageIO.read(getClass().getResourceAsStream("/BlueX.png"));
-			redCircle = ImageIO.read(getClass().getResourceAsStream("/RedCircle.png"));
+			board = ImageIO.read(getClass().getResourceAsStream("/res/Board.png"));
+			blueX = ImageIO.read(getClass().getResourceAsStream("/res/BlueX.png"));
+			redCircle = ImageIO.read(getClass().getResourceAsStream("/res/RedCircle.png"));
 		}
 		catch (IOException e) {
 			e.printStackTrace();
