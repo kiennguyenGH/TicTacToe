@@ -28,8 +28,8 @@ public class TicTacToe implements Runnable{
 	private int port = 22222;
 	private Scanner input = new Scanner(System.in);
 	private JFrame frame;
-	private final int WIDTH = 1000;
-	private final int HEIGHT = 1000;
+	private final int WIDTH = 500;
+	private final int HEIGHT = 500;
 	private Thread thread;
 	
 	private Painter painter;
@@ -52,7 +52,7 @@ public class TicTacToe implements Runnable{
 	private boolean enemyWon = false;
 	private boolean tie = false;
 	
-	private int lengthOfSpace = 328;
+	private int lengthOfSpace = 164;
 	private int errors = 0;
 	
 	private int firstSpot = -1;
