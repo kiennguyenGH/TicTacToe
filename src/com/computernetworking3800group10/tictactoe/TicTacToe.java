@@ -164,6 +164,8 @@ public class TicTacToe implements Runnable{
 			if (tie)
 			{
 				Graphics2D g2 = (Graphics2D) g;
+				g.setColor(Color.RED);
+				g.setFont(font);
 				int stringWidth = g2.getFontMetrics().stringWidth(tieString);
 				g.drawString(tieString, WIDTH/2 - stringWidth/2, HEIGHT/2);
 			}
