@@ -1,0 +1,7 @@
+How to run:
+- Install the TicTacToe.jar file
+- Open Command Prompt
+- Change the Command Prompt directory to where TicTacToe.jar is located
+- Run the command "java -jar TicTacToe.jar" in the Command Prompt
+- Repeat the Command Prompt steps on another instance of Command Prompt or on a separate device.
+- Enter the same IP and port number for each device/instance
