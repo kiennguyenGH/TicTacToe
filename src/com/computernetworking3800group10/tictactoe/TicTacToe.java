@@ -10,12 +10,7 @@ import java.awt.Toolkit;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
 import java.util.Scanner;
 
 import javax.imageio.ImageIO;
@@ -24,20 +19,17 @@ import javax.swing.JPanel;
 
 public class TicTacToe implements Runnable{
 	
-	public String ip = "localhost";
+	private String ip = "localhost";
 	private int port = 22222;
 	private Scanner input = new Scanner(System.in);
 	private JFrame frame;
-	private final int WIDTH = 500;
-	private final int HEIGHT = 500;
+	private final int WIDTH = 515;
+	private final int HEIGHT = 535;
 	private Thread thread;
 	
-	private Painter painter;
-	private Socket socket;
-	private DataOutputStream dos;
-	private DataInputStream dis;
+	private SocketManager socketManager = new SocketManager();
 	
-	private ServerSocket serverSocket;
+	private Painter painter;
 	
 	private BufferedImage board;
 	private BufferedImage blueX;
@@ -46,7 +38,6 @@ public class TicTacToe implements Runnable{
 	private String[] spaces = new String[9];
 	private boolean turn = false;
 	private boolean circle = true;
-	private boolean accepted = false;
 	private boolean unableToCommunicateWithOpponent = false;
 	private boolean won = false;
 	private boolean enemyWon = false;
@@ -59,8 +50,6 @@ public class TicTacToe implements Runnable{
 	private int secondSpot = -1;
 	
 	private Font font = new Font("Times New Roman", Font.PLAIN, 32);
-	private Font smallerFont = new Font("Times New Roman", Font.PLAIN, 20);
-	private Font largerFont = new Font("Times New Roman", Font.PLAIN, 50);
 	
 	private String waitingString = "Waiting for another player";
 	private String unableToCommunicateWithOpponentString = "Unable to communicate with opponent.";
@@ -90,9 +79,13 @@ public class TicTacToe implements Runnable{
 		painter = new Painter();
 		painter.setPreferredSize(new Dimension(WIDTH,HEIGHT));
 		
-		if (!connect())
+		
+		
+		if (!socketManager.connect(ip, port))
 		{
-			initializeServer();
+			socketManager.initializeServer(ip, port);
+			turn = true;
+			circle = false;
 		}
 		
 		frame = new JFrame();
@@ -116,8 +109,8 @@ public class TicTacToe implements Runnable{
 			tick();
 			painter.repaint();
 			
-			if 	(!circle && !accepted) {
-				listenForServerRequest();
+			if 	(!circle && !socketManager.isAccepted()) {
+				socketManager.listenForServerRequest();
 			}
 		}
 		
@@ -128,14 +121,14 @@ public class TicTacToe implements Runnable{
 		if (unableToCommunicateWithOpponent)
 		{
 			g.setColor(Color.RED);
-			g.setFont(smallerFont);
+			g.setFont(font);
 			Graphics2D g2 = (Graphics2D) g;
 			g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 			int stringWidth = g2.getFontMetrics().stringWidth(unableToCommunicateWithOpponentString);
 			g.drawString(unableToCommunicateWithOpponentString, WIDTH/2 - stringWidth/2, HEIGHT/2);
 			return;
 		}
-		if (accepted) {
+		if (socketManager.isAccepted()) {
 			for (int i =0; i < spaces.length; i++)
 			{
 				if (spaces[i] == "X")
@@ -155,7 +148,7 @@ public class TicTacToe implements Runnable{
 				g.drawLine(firstSpot % 3 * lengthOfSpace + 4 * firstSpot % 3 + lengthOfSpace / 2, (int)(firstSpot/3) * lengthOfSpace + 4 * (int) (firstSpot/3) + lengthOfSpace/2,
 						secondSpot % 3 * lengthOfSpace + 4 * secondSpot % 3 + lengthOfSpace / 2, (int) (secondSpot/3) * lengthOfSpace + 4 * (int) (secondSpot/3) + lengthOfSpace/2);
 				g.setColor(Color.RED);
-				g.setFont(largerFont);
+				g.setFont(font);
 				if (won)
 				{
 					int stringWidth = g2.getFontMetrics().stringWidth(wonString);
@@ -171,8 +164,6 @@ public class TicTacToe implements Runnable{
 			if (tie)
 			{
 				Graphics2D g2 = (Graphics2D) g;
-				g.setColor(Color.BLACK);
-				g.setFont(largerFont);
 				int stringWidth = g2.getFontMetrics().stringWidth(tieString);
 				g.drawString(tieString, WIDTH/2 - stringWidth/2, HEIGHT/2);
 			}
@@ -196,7 +187,7 @@ public class TicTacToe implements Runnable{
 		if (!turn && !unableToCommunicateWithOpponent)
 		{
 			try {
-				int space = dis.readInt();
+				int space = socketManager.getDis().readInt();
 				if (circle)
 				{
 					spaces[space] = "X";
@@ -272,55 +263,13 @@ public class TicTacToe implements Runnable{
 			{
 				if (spaces[i] == null)
 				{
-					
+					return;
 				}
 				
 			}
+			tie = true;
 		}
 	}
-	
-	private void listenForServerRequest()
-	{
-		Socket socket = null;
-		try {
-			socket = serverSocket.accept();
-			dos = new DataOutputStream(socket.getOutputStream());
-			dis = new DataInputStream(socket.getInputStream());
-			accepted = true;
-			System.out.println("Opponent found. Starting Tic Tac Toe match." );
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-	
-	private boolean connect() {
-		try {
-			socket = new Socket(ip, port);
-			dos = new DataOutputStream(socket.getOutputStream());
-			dis = new DataInputStream(socket.getInputStream());
-			accepted = true;
-		} catch (IOException e){
-			System.out.println("Unable to connect to address " + ip + ":" + port + "| Starting a new server.");
-			return false;
-		}
-		System.out.println("Successfully connected to opponent.");
-		return true;
-		
-		
-	}
-	
-	private void initializeServer()
-	{
-		try {
-			serverSocket = new ServerSocket(port, 8, InetAddress.getByName(ip));
-		} catch(Exception e){
-			e.printStackTrace();
-		}
-		turn = true;
-		circle = false;
-	}
-	
-	
 	
 	private void loadImages() {
 		try {
@@ -332,11 +281,6 @@ public class TicTacToe implements Runnable{
 			e.printStackTrace();
 		}
 		
-	}
-
-	public static void main(String[] args)
-	{
-		TicTacToe game = new TicTacToe();
 	}
 	
 	private class Painter extends JPanel implements MouseListener{
@@ -357,7 +301,7 @@ public class TicTacToe implements Runnable{
 		
 		@Override
 		public void mouseClicked(MouseEvent e) {
-			if (accepted) 
+			if (socketManager.isAccepted()) 
 			{
 				if (turn && !unableToCommunicateWithOpponent && !won && !enemyWon)
 				{
@@ -379,8 +323,8 @@ public class TicTacToe implements Runnable{
 						repaint();
 						Toolkit.getDefaultToolkit().sync();
 						try {
-							dos.writeInt(position);
-							dos.flush();
+							socketManager.getDos().writeInt(position);
+							socketManager.getDos().flush();
 						} catch (IOException error) {
 							errors++;
 							error.printStackTrace();
