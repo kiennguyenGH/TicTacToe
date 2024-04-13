@@ -1,4 +1,7 @@
-How to run:
+Requirements:
+- Java
+
+Run instructions:
 - Install the TicTacToe.jar file
 - Open Command Prompt
 - Change the Command Prompt directory to where TicTacToe.jar is located
